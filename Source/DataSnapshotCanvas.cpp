@@ -43,7 +43,6 @@ OptionsBar::OptionsBar(DataSnapshotCanvas* canvas_)
     colorMapSelector->addItem("Viridis", (int)ColorMapId::VIRIDIS);
     colorMapSelector->addItem("RdGy", (int) ColorMapId::RDGY);
     colorMapSelector->addItem("RdBu", (int)ColorMapId::RDBU);
-    colorMapSelector->addItem("Spectral", (int)ColorMapId::SPECTRAL);
     colorMapSelector->setSelectedId((int) ColorMapId::GREYS, dontSendNotification);
     colorMapSelector->addListener(this);
     addAndMakeVisible(colorMapSelector.get());
