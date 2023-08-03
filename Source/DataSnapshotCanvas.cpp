@@ -27,8 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ColorMap.h"
 
 
-OptionsBar::OptionsBar(DataSnapshotCanvas* canvas_)
+OptionsBar::OptionsBar(DataSnapshotCanvas* canvas_, DataSnapshot* processor)
     : canvas(canvas_)
+    , ParameterEditorOwner(this)
 {
 
     saveButton = std::make_unique<UtilityButton>("SAVE", Font("Default", 12, Font::plain));
@@ -36,29 +37,21 @@ OptionsBar::OptionsBar(DataSnapshotCanvas* canvas_)
     saveButton->setRadius(3.0f);
     saveButton->setClickingTogglesState(false);
     addAndMakeVisible(saveButton.get());
+    
+    ComboBoxParameterEditor* colorMapEditor = new ComboBoxParameterEditor(canvas->getParameter("color_map"), 24, 120);
+    colorMapEditor->getLabel()->setColour(Label::textColourId, Colours::white);
+    colorMapEditor->setLayout(ParameterEditor::Layout::nameOnLeft);
+    addParameterEditor(colorMapEditor, 350, 7);
 
-    colorMapSelector = std::make_unique<ComboBox>("Color Map Selector");
-    colorMapSelector->addItem("Greys", (int)ColorMapId::GREYS);
-    colorMapSelector->addItem("Cividis", (int)ColorMapId::CIVIDIS);
-    colorMapSelector->addItem("Viridis", (int)ColorMapId::VIRIDIS);
-    colorMapSelector->addItem("RdGy", (int) ColorMapId::RDGY);
-    colorMapSelector->addItem("RdBu", (int)ColorMapId::RDBU);
-    colorMapSelector->setSelectedId((int) ColorMapId::GREYS, dontSendNotification);
-    colorMapSelector->addListener(this);
-    addAndMakeVisible(colorMapSelector.get());
+    ComboBoxParameterEditor* rangeSelector = new ComboBoxParameterEditor(canvas->getParameter("voltage_range"), 24, 120);
+    rangeSelector->getLabel()->setColour(Label::textColourId, Colours::white);
+    rangeSelector->setLayout(ParameterEditor::Layout::nameOnLeft);
+    addParameterEditor(rangeSelector, 20, 7);
 
-    rangeSelector = std::make_unique<ComboBox>("Range selector");
-    rangeSelector->addItem("+/- 25 uV", 25);
-    rangeSelector->addItem("+/- 50 uV", 50);
-    rangeSelector->addItem("+/- 75 uV", 75);
-    rangeSelector->addItem("+/- 100 uV", 100);
-    rangeSelector->addItem("+/- 250 uV", 250);
-    rangeSelector->addItem("+/- 500 uV", 500);
-    rangeSelector->addItem("+/- 1000 uV", 1000);
-    rangeSelector->addItem("+/- 2000 uV", 2000);
-    rangeSelector->setSelectedId(50, dontSendNotification);
-    rangeSelector->addListener(this);
-    addAndMakeVisible(rangeSelector.get());
+    TextBoxParameterEditor* pEditor = new TextBoxParameterEditor(processor->getParameter("window"), 22, 80);
+    pEditor->getLabel()->setColour(Label::textColourId, Colours::white);
+    addParameterEditor(pEditor, 175, 7);
+    pEditor->setLayout(ParameterEditor::Layout::nameOnLeft);
 
 }
 
@@ -82,21 +75,6 @@ void OptionsBar::buttonClicked(Button* button)
     }
 }
 
-void OptionsBar::comboBoxChanged(ComboBox* comboBox)
-{
-    if (comboBox == colorMapSelector.get())
-    {
-        canvas->setColorMap(comboBox->getSelectedId());
-    }
-    else if (comboBox == rangeSelector.get())
-    {
-        const int range = comboBox->getSelectedId();
-
-        canvas->setRange(range);
-    }
-
-}
-
 void OptionsBar::resized()
 {
 
@@ -104,10 +82,11 @@ void OptionsBar::resized()
 
     saveButton->setBounds(getWidth() - 100, verticalOffset, 70, 25);
 
-    colorMapSelector->setBounds(240, verticalOffset, 120, 25);
+    getParameterEditor("voltage_range")->setTopLeftPosition(20, verticalOffset);
 
-    rangeSelector->setBounds(60, verticalOffset, 120, 25);
+    getParameterEditor("window")->setTopLeftPosition(255, verticalOffset);
 
+    getParameterEditor("color_map")->setTopLeftPosition(390, verticalOffset);
 }
 
 void OptionsBar::paint(Graphics& g)
@@ -118,33 +97,63 @@ void OptionsBar::paint(Graphics& g)
 
     const int verticalOffset = 4;
 
-    g.drawText("Voltage", 0, verticalOffset, 53, 15, Justification::centredRight, false);
-    g.drawText("Range", 0, verticalOffset + 15, 53, 15, Justification::centredRight, false);
-    g.drawText("Color", 190, verticalOffset, 43, 15, Justification::centredRight, false);
-    g.drawText("Map", 190, verticalOffset + 15, 43, 15, Justification::centredRight, false);
+    // g.drawText("Voltage", 0, verticalOffset, 53, 15, Justification::centredRight, false);
+    // g.drawText("Range", 0, verticalOffset + 15, 53, 15, Justification::centredRight, false);
+    // g.drawText("Color", 340, verticalOffset, 43, 15, Justification::centredRight, false);
+    // g.drawText("Map", 340, verticalOffset + 15, 43, 15, Justification::centredRight, false);
 
 }
 
 void OptionsBar::saveCustomParametersToXml(XmlElement* xml)
 {
-    xml->setAttribute("color_map", colorMapSelector->getSelectedId());
-    xml->setAttribute("plot_range", rangeSelector->getSelectedId());
+    // xml->setAttribute("color_map", colorMapSelector->getSelectedId());
+    // xml->setAttribute("plot_range", rangeSelector->getSelectedId());
 }
 
 void OptionsBar::loadCustomParametersFromXml(XmlElement* xml)
 {
-    colorMapSelector->setSelectedId(xml->getIntAttribute("color_map", 1), sendNotification);
-    rangeSelector->setSelectedId(xml->getIntAttribute("plot_range", 50), sendNotification);
+    // colorMapSelector->setSelectedId(xml->getIntAttribute("color_map", 1), sendNotification);
+    // rangeSelector->setSelectedId(xml->getIntAttribute("plot_range", 50), sendNotification);
 }
 
 DataSnapshotCanvas::DataSnapshotCanvas(DataSnapshot* processor_)
-	: processor(processor_)
+	: Visualizer(processor_),
+      processor(processor_)
 {
 	DataSnapshot* ds = dynamic_cast<DataSnapshot*>(processor_);
 	ds->addChangeListener(this);
 
-    optionsBar = std::make_unique<OptionsBar>(this);
-    addAndMakeVisible(optionsBar.get());
+    Array<String> colorMaps;
+    colorMaps.add("Greys");
+    colorMaps.add("Cividis");
+    colorMaps.add("Viridis");
+    colorMaps.add("RdGy");
+    colorMaps.add("RdBu");
+    addCategoricalParameter("color_map", "Color Map", "Color map for data snapshot", colorMaps, 0);
+
+    Array<String> ranges;
+    ranges.add("+/- 25 uV");
+    ranges.add("+/- 50 uV");
+    ranges.add("+/- 75 uV");
+    ranges.add("+/- 100 uV");
+    ranges.add("+/- 250 uV");
+    ranges.add("+/- 500 uV");
+    ranges.add("+/- 1000 uV");
+    ranges.add("+/- 2000 uV");
+
+    for(auto vRange : ranges)
+    {
+        voltageRanges[vRange] = vRange.substring(4, vRange.length() - 3).getIntValue();
+    }
+
+    addCategoricalParameter("voltage_range", "Voltage Range", "Voltage Range for data snapshot", ranges, 1);
+
+    // TextBoxParameterEditor* pEditor = new TextBoxParameterEditor(processor->getParameter("window"));
+    // addParameterEditor(pEditor, 175, 15);
+    // pEditor->setLayout(ParameterEditor::Layout::nameOnLeft);
+
+    optionsBar = new OptionsBar(this, processor);
+    addParameterEditorOwner(optionsBar);
 
     image = std::make_unique<Image>(Image::RGB, 4000, 16, true);
 
@@ -155,7 +164,7 @@ DataSnapshotCanvas::DataSnapshotCanvas(DataSnapshot* processor_)
 
 void DataSnapshotCanvas::resized()
 {
-	optionsBar->setBounds(0, getHeight() - 40, getWidth(), 40);
+	optionsBar->setBounds(0, getHeight() - 50, getWidth(), 50);
 }
 
 
@@ -165,14 +174,27 @@ void DataSnapshotCanvas::paint(Graphics& g)
 	g.fillAll(Colours::black);
 
     // draw image
-    g.drawImageWithin(*image, 20, 20, getWidth() - 40, getHeight() - 70, RectanglePlacement::stretchToFit, false);
+    g.drawImageWithin(*image, 20, 20, getWidth() - 40, getHeight() - 80, RectanglePlacement::stretchToFit, false);
 
 }
 
-void DataSnapshotCanvas::setRange(int rangeMicrovolts)
+
+void DataSnapshotCanvas::parameterValueChanged(Parameter* param)
 {
-    // set range
-    range = (float)rangeMicrovolts;
+    //LOGD("Changing parameter: ", param->getName());
+
+    if (param->getName().equalsIgnoreCase("color_map"))
+    {
+        int colormapIndex = (int)param->getValue();
+        ColorMap::setColorMap((ColorMapId) colormapIndex);
+        LOGD("**************************** Setting Color Map: ", colormapIndex);
+    }
+    else if (param->getName().equalsIgnoreCase("voltage_range"))
+    {
+        String rangeValue = param->getValueAsString();
+        range = voltageRanges[rangeValue];
+        LOGD("***************************** Setting Voltage Range: ", rangeValue);
+    }
 }
 
 

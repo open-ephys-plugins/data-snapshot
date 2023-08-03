@@ -51,6 +51,8 @@ public:
 		will be passed to downstream plugins. */
 	void updateSettings() override;
 
+	void registerParameters() override;
+
 	/** Called when a parameter value is changed*/
 	void parameterValueChanged(Parameter* param);
 

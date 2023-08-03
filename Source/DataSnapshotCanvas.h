@@ -36,12 +36,12 @@ class DataSnapshotCanvas;
 */
 class OptionsBar :
     public Component,
-    public Button::Listener,
-    public ComboBox::Listener
+	public ParameterEditorOwner,
+    public Button::Listener
 {
 public:
     /** Constructor */
-    OptionsBar(DataSnapshotCanvas* canvas);
+    OptionsBar(DataSnapshotCanvas* canvas, DataSnapshot* processor);
 
     /** Destructor */
     ~OptionsBar() { }
@@ -49,8 +49,6 @@ public:
     /** Respond to button clicks */
     void buttonClicked(Button* button) override;
 
-    /** Respond to button clicks */
-    void comboBoxChanged(ComboBox* comboBox) override;
 
     /** Called when the component changes size */
     void resized();
@@ -68,9 +66,9 @@ private:
 
     std::unique_ptr<UtilityButton> saveButton;
 
-    std::unique_ptr<ComboBox> colorMapSelector;
+    // std::unique_ptr<ComboBox> colorMapSelector;
 
-    std::unique_ptr<ComboBox> rangeSelector;
+    // std::unique_ptr<ComboBox> rangeSelector;
 
 
     DataSnapshotCanvas* canvas;
@@ -100,7 +98,7 @@ public:
 	void refreshState() override { }
 
 	/** Updates settings */
-	void update() override { }
+	void updateSettings() override { }
 
 	/** Called instead of "repaint()" to avoid re-painting sub-components*/
 	void refresh() override { }
@@ -120,6 +118,9 @@ public:
 	/** Handles change message from processor */
 	void changeListenerCallback(ChangeBroadcaster* source) override;
 
+	/** Called when a parameter value is updated, to allow plugin-specific responses*/
+	void parameterValueChanged(Parameter*) override;
+
 	/** Saves parameters */
 	void saveCustomParametersToXml(XmlElement* xml) override;
 
@@ -135,7 +136,9 @@ private:
 	std::unique_ptr<Image> image;
 
 	/** Options bar*/
-	std::unique_ptr<OptionsBar> optionsBar;
+	OptionsBar* optionsBar;
+
+	std::unordered_map<String, float> voltageRanges;
 
 	/** Data range (in microvolts) */
 	float range = 50;

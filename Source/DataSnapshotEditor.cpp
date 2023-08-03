@@ -37,8 +37,7 @@ DataSnapshotEditor::DataSnapshotEditor(GenericProcessor* p)
     streamSelection->addListener(this);
     addAndMakeVisible(streamSelection.get());
     
-    addTextBoxParameterEditor("window", 15, 55);
-    addMaskChannelsParameterEditor("channels", 15, 100);
+    addMaskChannelsParameterEditor(Parameter::PROCESSOR_SCOPE, "channels", 15, 100);
 
     takeSnapshotButton = std::make_unique<UtilityButton>("SNAP", titleFont);
     takeSnapshotButton->addListener(this);
@@ -98,6 +97,7 @@ void DataSnapshotEditor::comboBoxChanged(ComboBox* cb)
             MaskChannelsParameter* param = dynamic_cast<MaskChannelsParameter*>(getProcessor()->getParameter("channels"));
             param->setChannelCount(getProcessor()->getDataStream(currentStream)->getChannelCount());
             param->setNextValue(param->getValue());
+            param->valueChanged();
         }
     }
 

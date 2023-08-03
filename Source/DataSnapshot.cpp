@@ -29,26 +29,29 @@
 DataSnapshot::DataSnapshot() 
     : GenericProcessor("Data Snapshot")
 {
-
-    addIntParameter(Parameter::GLOBAL_SCOPE,
-        "window", "Snapshot size in ms",
-        100, 20, 200, false);
-    
-    addIntParameter(Parameter::GLOBAL_SCOPE,
-        "current_stream", "Currently selected stream",
-        0, 0, 200000, false);
-
-    addMaskChannelsParameter(Parameter::GLOBAL_SCOPE,
-        "channels", "Snapshot channels");
-
-    addBooleanParameter(Parameter::GLOBAL_SCOPE,
-        "snap", "Used to trigger snapshots", false);
 }
 
 
 DataSnapshot::~DataSnapshot()
 {
 
+}
+
+void DataSnapshot::registerParameters()
+{
+    addIntParameter(Parameter::PROCESSOR_SCOPE,
+        "window", "Window", "Snapshot size in ms",
+        100, 20, 200, false);
+    
+    addIntParameter(Parameter::PROCESSOR_SCOPE,
+        "current_stream", "Current Stream", "Currently selected stream",
+        0, 0, 200000, false);
+
+    addMaskChannelsParameter(Parameter::PROCESSOR_SCOPE,
+        "channels", "Channels", "Snapshot channels");
+
+    addBooleanParameter(Parameter::PROCESSOR_SCOPE,
+        "snap", "Snap",  "Used to trigger snapshots", false);
 }
 
 
@@ -72,8 +75,6 @@ void DataSnapshot::updateSettings()
     {
         numChannels = getDataStream(currentStream)->getChannelCount();
     }
-
-    parameterValueChanged(getParameter("window"));
 
 }
 
@@ -118,7 +119,7 @@ void DataSnapshot::parameterValueChanged(Parameter* parameter)
             numSamples = int(getDataStream(currentStream)->getSampleRate() * ((float)parameter->getValue() / 1000));
         }
       
-        //std::cout << "Window size in samples: " << numSamples << std::endl;
+        std::cout << "********************* Window size in samples: " << numSamples << std::endl;
 
     }
     else if (parameter->getName().equalsIgnoreCase("channels"))
