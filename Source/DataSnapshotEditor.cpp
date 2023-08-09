@@ -31,18 +31,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 DataSnapshotEditor::DataSnapshotEditor(GenericProcessor* p)
     : VisualizerEditor(p, "Snapshot", 200)
 {
-
-    streamSelection = std::make_unique<ComboBox>("Stream Selector");
-    streamSelection->setBounds(15, 32, 180, 20);
-    streamSelection->addListener(this);
-    addAndMakeVisible(streamSelection.get());
+    // Stream selector editor
+    addSelectedStreamParameterEditor(Parameter::PROCESSOR_SCOPE, "current_stream", 15, 35);
+    auto currStreamEditor = getParameterEditor("current_stream");
+    currStreamEditor->setLayout(ParameterEditor::Layout::nameHidden);
+    currStreamEditor->setBounds(15, 35, 320, 20);
     
-    addMaskChannelsParameterEditor(Parameter::PROCESSOR_SCOPE, "channels", 15, 100);
+    // Channel selector editor
+    addMaskChannelsParameterEditor(Parameter::PROCESSOR_SCOPE, "channels", 15, 75);
+    getParameterEditor("channels")->setLayout(ParameterEditor::Layout::nameOnTop);
 
+    // Snapshot button
     takeSnapshotButton = std::make_unique<UtilityButton>("SNAP", titleFont);
     takeSnapshotButton->addListener(this);
     takeSnapshotButton->setRadius(3.0f);
-    takeSnapshotButton->setBounds(110, 80, 80, 35);
+    takeSnapshotButton->setBounds(110, 80, 75, 35);
     addAndMakeVisible(takeSnapshotButton.get());
 
     ChangeBroadcaster* snap = dynamic_cast<ChangeBroadcaster*>(p);
@@ -55,60 +58,12 @@ Visualizer* DataSnapshotEditor::createNewCanvas()
     return new DataSnapshotCanvas((DataSnapshot*) getProcessor());;
 }
 
-void DataSnapshotEditor::updateSettings()
-{
- 
-    streamSelection->clear();
-
-	for (auto stream : getProcessor()->getDataStreams())
-	{
-        if (currentStream == 0)
-            currentStream = stream->getStreamId();
-        
-		streamSelection->addItem(stream->getName(), stream->getStreamId());
-	}
-
-    if (streamSelection->indexOfItemId(currentStream) == -1)
-    {
-        if (streamSelection->getNumItems() > 0)
-            currentStream = streamSelection->getItemId(0);
-        else
-            currentStream = 0;
-    }
-		
-    if (currentStream > 0)
-    {
-        streamSelection->setSelectedId(currentStream, sendNotification);
-    }
-        
-    
-}
-
-void DataSnapshotEditor::comboBoxChanged(ComboBox* cb)
-{
-    if (cb == streamSelection.get())
-    {
-
-		currentStream = cb->getSelectedId();
-        
-        if (currentStream > 0)
-        {
-            getProcessor()->getParameter("current_stream")->setNextValue(currentStream);
-            MaskChannelsParameter* param = dynamic_cast<MaskChannelsParameter*>(getProcessor()->getParameter("channels"));
-            param->setChannelCount(getProcessor()->getDataStream(currentStream)->getChannelCount());
-            param->setNextValue(param->getValue());
-            param->valueChanged();
-        }
-    }
-
-}
-
 
 void DataSnapshotEditor::buttonClicked(Button* button)
 {
     if (button == takeSnapshotButton.get() && CoreServices::getAcquisitionStatus())
     {
-        getProcessor()->getParameter("snap")->setNextValue(true);
+        getProcessor()->parameterValueChanged(getProcessor()->getParameter("snap"));
         takeSnapshotButton->setEnabledState(false);
     }
 }

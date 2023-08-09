@@ -28,6 +28,9 @@
 
 DataSnapshot::DataSnapshot() 
     : GenericProcessor("Data Snapshot")
+    , currentStream(0)
+    , numChannels(0)
+    , numSamples(0)
 {
 }
 
@@ -43,9 +46,9 @@ void DataSnapshot::registerParameters()
         "window", "Window", "Snapshot size in ms",
         100, 20, 200, false);
     
-    addIntParameter(Parameter::PROCESSOR_SCOPE,
+    addSelectedStreamParameter(Parameter::PROCESSOR_SCOPE,
         "current_stream", "Current Stream", "Currently selected stream",
-        0, 0, 200000, false);
+        {}, 0, false);
 
     addMaskChannelsParameter(Parameter::PROCESSOR_SCOPE,
         "channels", "Channels", "Snapshot channels");
@@ -64,17 +67,6 @@ AudioProcessorEditor* DataSnapshot::createEditor()
 
 void DataSnapshot::updateSettings()
 {
-
-    for (auto stream : getDataStreams())
-    {
-        if (!streamExists(currentStream))
-            currentStream = stream->getStreamId();
-    }
-
-    if (streamExists(currentStream))
-    {
-        numChannels = getDataStream(currentStream)->getChannelCount();
-    }
 
 }
 
@@ -97,7 +89,6 @@ void DataSnapshot::parameterValueChanged(Parameter* parameter)
 
     if (parameter->getName().equalsIgnoreCase("snap") && CoreServices::getAcquisitionStatus())
     {
-        //std::cout << "Snap sample index = 0." << std::endl;
         snapSampleIndex = 0;
         return;
     }
@@ -105,10 +96,24 @@ void DataSnapshot::parameterValueChanged(Parameter* parameter)
     if (parameter->getName().equalsIgnoreCase("current_stream"))
     {
 
-        uint16 candidateStream = (uint16) (int) parameter->getValue();
+        int streamIndex = (int) parameter->getValue();
         
-        if (streamExists(candidateStream))
-            currentStream = candidateStream;
+        if(streamIndex < 0 || streamIndex >= getDataStreams().size())
+        {
+            currentStream = 0;
+            numChannels = 0;
+            numSamples = 0;
+        }
+        else
+        {
+            currentStream = getDataStreams()[streamIndex]->getStreamId();
+            numChannels = getDataStream(currentStream)->getChannelCount();
+            numSamples = int(getDataStream(currentStream)->getSampleRate() * ((float)getParameter("window")->getValue() / 1000));
+        }
+
+        MaskChannelsParameter* chansParam = (MaskChannelsParameter*)getParameter("channels");
+        chansParam->setChannelCount(numChannels);
+        chansParam->valueChanged();
 
     }
     else if (parameter->getName().equalsIgnoreCase("window"))
@@ -119,8 +124,6 @@ void DataSnapshot::parameterValueChanged(Parameter* parameter)
             numSamples = int(getDataStream(currentStream)->getSampleRate() * ((float)parameter->getValue() / 1000));
         }
       
-        std::cout << "********************* Window size in samples: " << numSamples << std::endl;
-
     }
     else if (parameter->getName().equalsIgnoreCase("channels"))
     {
@@ -130,15 +133,12 @@ void DataSnapshot::parameterValueChanged(Parameter* parameter)
        // std::cout << "Num channels: " << numChannels << std::endl;
     }
 
-    if (numChannels > 0 && numSamples > 0)
+    if(numChannels > 0  && numSamples > 0)
     {
-        //std::cout << "Setting buffer to " << numChannels << " x " << numSamples << std::endl;
+        LOGDD(" Snapshot buffer resized: ", numChannels, "x", numSamples);
         snapshotBuffer.setSize(numChannels, numSamples);
+        snapshotBuffer.clear();
     }
-    else {
-        //std::cout << "Not creating buffer, numChannels = " << numChannels << ", numSamples = " << numSamples << std::endl;
-    }
-
 }
 
 
@@ -160,8 +160,6 @@ void DataSnapshot::process(AudioBuffer<float>& buffer)
         for (auto localChannelIndex : *getParameter("channels")->getValue().getArray())
         {
             int globalChannelIndex = getGlobalChannelIndex(stream->getStreamId(), (int)localChannelIndex);
-
-            //std::cout << globalChannelIndex << " " << snapSampleIndex << " " << ch << " " << samplesToCopy << std::endl;
 
             snapshotBuffer.copyFrom(ch,                 // destChannel
                                     snapSampleIndex,    // destSample

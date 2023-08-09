@@ -95,27 +95,10 @@ void OptionsBar::paint(Graphics& g)
 
     g.setColour(Colours::grey);
 
-    const int verticalOffset = 4;
-
-    // g.drawText("Voltage", 0, verticalOffset, 53, 15, Justification::centredRight, false);
-    // g.drawText("Range", 0, verticalOffset + 15, 53, 15, Justification::centredRight, false);
-    // g.drawText("Color", 340, verticalOffset, 43, 15, Justification::centredRight, false);
-    // g.drawText("Map", 340, verticalOffset + 15, 43, 15, Justification::centredRight, false);
-
 }
 
-void OptionsBar::saveCustomParametersToXml(XmlElement* xml)
-{
-    // xml->setAttribute("color_map", colorMapSelector->getSelectedId());
-    // xml->setAttribute("plot_range", rangeSelector->getSelectedId());
-}
 
-void OptionsBar::loadCustomParametersFromXml(XmlElement* xml)
-{
-    // colorMapSelector->setSelectedId(xml->getIntAttribute("color_map", 1), sendNotification);
-    // rangeSelector->setSelectedId(xml->getIntAttribute("plot_range", 50), sendNotification);
-}
-
+// ---------------------------------------------------------------------------------------------------------------
 DataSnapshotCanvas::DataSnapshotCanvas(DataSnapshot* processor_)
 	: Visualizer(processor_),
       processor(processor_)
@@ -147,10 +130,6 @@ DataSnapshotCanvas::DataSnapshotCanvas(DataSnapshot* processor_)
     }
 
     addCategoricalParameter("voltage_range", "Voltage Range", "Voltage Range for data snapshot", ranges, 1);
-
-    // TextBoxParameterEditor* pEditor = new TextBoxParameterEditor(processor->getParameter("window"));
-    // addParameterEditor(pEditor, 175, 15);
-    // pEditor->setLayout(ParameterEditor::Layout::nameOnLeft);
 
     optionsBar = new OptionsBar(this, processor);
     addParameterEditorOwner(optionsBar);
@@ -185,15 +164,13 @@ void DataSnapshotCanvas::parameterValueChanged(Parameter* param)
 
     if (param->getName().equalsIgnoreCase("color_map"))
     {
-        int colormapIndex = (int)param->getValue();
+        int colormapIndex = (int)param->getValue() + 1;
         ColorMap::setColorMap((ColorMapId) colormapIndex);
-        LOGD("**************************** Setting Color Map: ", colormapIndex);
     }
     else if (param->getName().equalsIgnoreCase("voltage_range"))
     {
         String rangeValue = param->getValueAsString();
         range = voltageRanges[rangeValue];
-        LOGD("***************************** Setting Voltage Range: ", rangeValue);
     }
 }
 
@@ -244,10 +221,10 @@ void DataSnapshotCanvas::changeListenerCallback(ChangeBroadcaster* source)
 
 void DataSnapshotCanvas::saveCustomParametersToXml(XmlElement* xml)
 {
-    optionsBar->saveCustomParametersToXml(xml);
+
 }
 
 void DataSnapshotCanvas::loadCustomParametersFromXml(XmlElement* xml)
 {
-    optionsBar->loadCustomParametersFromXml(xml);
+
 }

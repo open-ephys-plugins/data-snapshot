@@ -35,7 +35,6 @@
 
 class DataSnapshotEditor : public VisualizerEditor, 
 	public Button::Listener,
-	public ComboBox::Listener,
 	public ChangeListener
 {
 public:
@@ -49,14 +48,8 @@ public:
 	/** Creates the canvas */
 	Visualizer* createNewCanvas();
 
-	/** Called when underlying settings are updated */
-	void updateSettings() override;
-
 	/** Called when button is pressed*/
 	void buttonClicked(Button* button);
-	
-	/** Called when a ComboBox changes*/
-	void comboBoxChanged(ComboBox* comboBox);
 
 	/** Called when snapshot is ready */
 	void changeListenerCallback(ChangeBroadcaster* source);

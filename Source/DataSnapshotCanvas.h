@@ -56,20 +56,9 @@ public:
     /** Renders component background */
     void paint(Graphics& g);
 
-    /** Save plot parameters*/
-    void saveCustomParametersToXml(XmlElement* xml);
-
-    /** Load plot parameters*/
-    void loadCustomParametersFromXml(XmlElement* xml);
-
 private:
 
     std::unique_ptr<UtilityButton> saveButton;
-
-    // std::unique_ptr<ComboBox> colorMapSelector;
-
-    // std::unique_ptr<ComboBox> rangeSelector;
-
 
     DataSnapshotCanvas* canvas;
 
