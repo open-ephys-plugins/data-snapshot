@@ -35,11 +35,12 @@ DataSnapshotEditor::DataSnapshotEditor(GenericProcessor* p)
     addSelectedStreamParameterEditor(Parameter::PROCESSOR_SCOPE, "current_stream", 15, 35);
     auto currStreamEditor = getParameterEditor("current_stream");
     currStreamEditor->setLayout(ParameterEditor::Layout::nameHidden);
-    currStreamEditor->setBounds(15, 35, 320, 20);
+    currStreamEditor->setSize(170, 20);
     
     // Channel selector editor
     addMaskChannelsParameterEditor(Parameter::PROCESSOR_SCOPE, "channels", 15, 75);
     getParameterEditor("channels")->setLayout(ParameterEditor::Layout::nameOnTop);
+    getParameterEditor("channels")->setSize(80, 36);
 
     // Snapshot button
     takeSnapshotButton = std::make_unique<UtilityButton>("SNAP", titleFont);

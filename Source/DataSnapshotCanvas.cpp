@@ -37,21 +37,21 @@ OptionsBar::OptionsBar(DataSnapshotCanvas* canvas_, DataSnapshot* processor)
     saveButton->setRadius(3.0f);
     saveButton->setClickingTogglesState(false);
     addAndMakeVisible(saveButton.get());
-    
-    ComboBoxParameterEditor* colorMapEditor = new ComboBoxParameterEditor(canvas->getParameter("color_map"), 24, 120);
-    colorMapEditor->getLabel()->setColour(Label::textColourId, Colours::white);
-    colorMapEditor->setLayout(ParameterEditor::Layout::nameOnLeft);
-    addParameterEditor(colorMapEditor, 350, 7);
 
-    ComboBoxParameterEditor* rangeSelector = new ComboBoxParameterEditor(canvas->getParameter("voltage_range"), 24, 120);
+    ComboBoxParameterEditor* rangeSelector = new ComboBoxParameterEditor(canvas->getParameter("voltage_range"), 24, 220);
     rangeSelector->getLabel()->setColour(Label::textColourId, Colours::white);
     rangeSelector->setLayout(ParameterEditor::Layout::nameOnLeft);
     addParameterEditor(rangeSelector, 20, 7);
 
-    TextBoxParameterEditor* pEditor = new TextBoxParameterEditor(processor->getParameter("window"), 22, 80);
+    TextBoxParameterEditor* pEditor = new TextBoxParameterEditor(processor->getParameter("window"), 22, 160);
     pEditor->getLabel()->setColour(Label::textColourId, Colours::white);
-    addParameterEditor(pEditor, 175, 7);
     pEditor->setLayout(ParameterEditor::Layout::nameOnLeft);
+    addParameterEditor(pEditor, 260, 7);
+
+    ComboBoxParameterEditor* colorMapEditor = new ComboBoxParameterEditor(canvas->getParameter("color_map"), 24, 160);
+    colorMapEditor->getLabel()->setColour(Label::textColourId, Colours::white);
+    colorMapEditor->setLayout(ParameterEditor::Layout::nameOnLeft);
+    addParameterEditor(colorMapEditor, 450, 7);
 
 }
 
@@ -82,11 +82,11 @@ void OptionsBar::resized()
 
     saveButton->setBounds(getWidth() - 100, verticalOffset, 70, 25);
 
-    getParameterEditor("voltage_range")->setTopLeftPosition(20, verticalOffset);
+    // getParameterEditor("voltage_range")->setTopLeftPosition(20, verticalOffset);
 
-    getParameterEditor("window")->setTopLeftPosition(255, verticalOffset);
+    // getParameterEditor("window")->setTopLeftPosition(255, verticalOffset);
 
-    getParameterEditor("color_map")->setTopLeftPosition(390, verticalOffset);
+    // getParameterEditor("color_map")->setTopLeftPosition(390, verticalOffset);
 }
 
 void OptionsBar::paint(Graphics& g)
