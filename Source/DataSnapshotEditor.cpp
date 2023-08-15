@@ -64,7 +64,7 @@ void DataSnapshotEditor::buttonClicked(Button* button)
 {
     if (button == takeSnapshotButton.get() && CoreServices::getAcquisitionStatus())
     {
-        EventNotificationParameter* snapParam = (EventNotificationParameter*) getProcessor()->getParameter("snap");
+        NotificationParameter* snapParam = (NotificationParameter*) getProcessor()->getParameter("snap");
         snapParam->triggerNotification();
         takeSnapshotButton->setEnabledState(false);
     }

@@ -53,7 +53,7 @@ void DataSnapshot::registerParameters()
     addMaskChannelsParameter(Parameter::PROCESSOR_SCOPE,
         "channels", "Channels", "Snapshot channels");
 
-    addEventNotificationParameter(Parameter::PROCESSOR_SCOPE,
+    addNotificationParameter(Parameter::PROCESSOR_SCOPE,
         "snap", "Snap",  "Used to trigger snapshots", false);
 }
 
